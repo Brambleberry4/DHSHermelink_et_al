@@ -99,8 +99,7 @@ def main():
     rhs = [inner(ineq, s) for ineq in eqs]
     print("Setting distributions to actual values..")
     #HW leakage model:
-    rhs_eq=[[(x,measure_HW_Noise(rhi)[twoComp(x).bit_count()]) for x in range(-VALRAN,VALRAN)] for rhi in rhs]    
-    print(rhs_eq) 
+    rhs_eq=[[(x,measure_HW_Noise(rhi)[twoComp(x).bit_count()]) for x in range(-VALRAN,VALRAN)] for rhi in rhs]
     
     #print(len(rhs_eq))
     print("Creating BP and Greedy..")
