@@ -45,14 +45,25 @@ def measure_HW_Noise(inner_product):
     gau_err = np.random.normal(0,STD_DEV)
     new_mu = hw + gau_err
     #Create a probability mass function from this mu
+    # 0 - 28 are all possible HWs for this type
     x_vals = np.arange(29)
     pdf =  norm.pdf(x_vals,new_mu, STD_DEV)
     rounded_pdf = np.round(pdf, decimals=5)
     return rounded_pdf
 
+def measure_LSB(inner_product):
+    #Get the LSB of inner_product
+    lsb = inner_product & 1
+    #For every val: if lsb(val) = lsb of inner_product => 1.0 else 0.0
+    return lsb
+
 
 def attackHW(rhs,val):
     return [[(x,measure_HW_Noise(rhi)[twoComp(x).bit_count()]) for x in range(-val,val)] for rhi in rhs]
+
+def attackLSB(rhs,val):
+    #Create rhs
+    return 0
 
 
 def main():
@@ -73,9 +84,13 @@ def main():
         li.append(sume)
     val = max(li)
     
+    for x in range(5):
+        print(x, measure_LSB(x))
     # Compute the distributions
     list_of_dist_hints = attackHW(rhs, val) 
     #rhs_eq2=[[(x,measure_HW_Noise(rhi).get(twoComp(x).bit_count(),0.0)) for x in range(-val,val)] for rhi in rhs]
+    print(rhs[0])
+    print(measure_HW_Noise(rhs[0]))
     
     # Remove entries with probability 0.0
     rhs_eq = []
@@ -87,7 +102,7 @@ def main():
     bp = PyBP(eqs, rhs_eq)
     greedy = PyGreedy(eqs, rhs_eq)
     greedy.set_nthreads(4)
-    bp.set_nthreads(4)
+    bp.set_nthreads(1)
     k = NVAR
     print("Solving (GR)..")
     for i in range(N_GR):
@@ -106,7 +121,9 @@ def main():
     print("Solving (BP)..")
     k = NFAC
     for i in range(N_BP):
+        # One full iteration
         bp.propagate()
+        # Compute the current resulting prob. distributions
         dists = bp.get_results()
         guess = []
         for dist in dists:
